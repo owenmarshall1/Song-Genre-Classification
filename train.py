@@ -7,10 +7,10 @@ import torch.optim as optim
 from audio_dataset import AudioGenreDataset, LABELS
 from audio_model import AudioCNN
 
-from images import ImageGenreDataset
-from images import ImageConv2d
+from images_dataset import ImageGenreDataset
+from images_model import ImageConv2d
 
-def train(model, loader, device, epochs=10):
+def train(model, loader, device, epochs=20):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
@@ -52,9 +52,7 @@ def main():
         model = AudioCNN()
     else:
         data_handler = ImageGenreDataset("data/images_original")
-        
         loader = data_handler.train_loader
-        
         model = ImageConv2d(num_classes=data_handler.num_classes)
     train(model, loader, device)
 
