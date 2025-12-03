@@ -9,24 +9,48 @@ from torchvision import datasets
 from torchvision import transforms
 from torchinfo import summary # <-- Add this
 
-transform = transforms.Compose([
-    transforms.Resize((128, 128)),  
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5], std=[0.5])
-])
-###Loading data And Data preperation taking 10 of each for testing as unseen data
-data = datasets.ImageFolder("data/images_original", transform=transform)
-num_classes = len(data.classes)
-print(data.classes)
+import torch
+from torch.utils.data import DataLoader, random_split
+from torchvision import datasets, transforms
 
-train_data, test_data = random_split(data, (0.9,0.1))
-train_loader = DataLoader(train_data, batch_size=32, shuffle=True)
-test_loader  = DataLoader(test_data,  batch_size=32, shuffle=True)
+class ImageGenreDataset:
+    def __init__(self, data_path, img_size=(128, 128), batch_size=32, split_ratio=0.9):
+        self.data_path = data_path
+        self.img_size = img_size
+        self.batch_size = batch_size
+        self.split_ratio = split_ratio
+        
+        # Define transforms
+        self.transform = transforms.Compose([
+            transforms.Resize(self.img_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5], std=[0.5])
+        ])
+        
+        # Load dataset with transform
+        self.data = datasets.ImageFolder(self.data_path, transform=self.transform)
+        self.classes = self.data.classes
+        self.num_classes = len(self.classes)
+        
+        # Split dataset
+        train_len = int(len(self.data) * self.split_ratio)
+        test_len  = len(self.data) - train_len
 
+        self.train_data, self.test_data = random_split(self.data, [train_len, test_len])
+
+        # Create loaders
+        self.train_loader = DataLoader(self.train_data, batch_size=self.batch_size, shuffle=True)
+        self.test_loader  = DataLoader(self.test_data,  batch_size=self.batch_size, shuffle=True)
+
+    def get_loaders(self):
+        return self.train_loader, self.test_loader
+
+    def get_classes(self):
+        return self.classes
 
 #CONV Neural data 
 class ImageConv2d(nn.Module):
-    def __init__(self, num_classes, input_channels ,out_channels=16, kernel_size=3, pool_size=2, activation=None):
+    def __init__(self, num_classes, input_channels=3 ,out_channels=16, kernel_size=3, pool_size=2, activation=None):
         super().__init__()
         
 
@@ -84,9 +108,3 @@ class ImageConv2d(nn.Module):
 
         X = self.fc(X)
         return X
-
-input_channels = 3 
-model = ImageConv2d(num_classes=num_classes, input_channels=input_channels)
-
-print("Model Summary (Input 3x128x128):")
-summary(model, input_size=(1, input_channels, 128, 128))
