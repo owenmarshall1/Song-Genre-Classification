@@ -48,7 +48,9 @@ def main():
         loader = DataLoader(dataset, batch_size=4, shuffle=True)
         model = AudioCNN()
     else:
-        #images mode
+        dataset = ImageGenerDataset(
+            
+        )
         return
 
     train(model, loader, device)
