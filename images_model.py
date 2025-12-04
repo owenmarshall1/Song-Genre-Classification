@@ -39,9 +39,11 @@ class ImageConv2d(nn.Module):
         
         final_size = self._get_conv_output(img_size, input_channels)
         self.fc = nn.Sequential(
-            nn.LazyLinear(100),
-            nn.Linear(100, num_classes)
-        )
+            nn.Linear(final_size, 256),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(256, num_classes)
+)
     
     def _get_conv_output(self, img_size, input_channels):
 

@@ -32,6 +32,9 @@ class ImageGenreDataset:
             )),
             transforms.Resize(self.img_size),
             transforms.ToTensor(),
+            transforms.RandomResizedCrop(size=128, scale=(0.85, 1.0)),
+            transforms.RandomAffine(degrees=0, translate=(0.1, 0)),
+            transforms.ColorJitter(brightness=0.1, contrast=0.1),
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
 
@@ -45,7 +48,7 @@ class ImageGenreDataset:
 
         # Create loaders
         self.train_loader = DataLoader(self.train_data, batch_size=self.batch_size, shuffle=True)
-        self.test_loader  = DataLoader(self.test_data,  batch_size=self.batch_size, shuffle=True)
+        self.test_loader  = DataLoader(self.test_data,  batch_size=self.batch_size, shuffle=False)
 
 
     def get_loaders(self):

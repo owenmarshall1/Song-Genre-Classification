@@ -7,6 +7,7 @@ def test_model(model, test_loader, device):
     model.eval()
     correct = 0
     total = 0 
+    total_loss=0 
     lossfunction = nn.CrossEntropyLoss()
 
     with torch.no_grad():
@@ -16,8 +17,9 @@ def test_model(model, test_loader, device):
 
             y_predicted = model (X)
             test_loss = lossfunction(y_predicted, y)
+            total_loss += test_loss.item()
             predicted = torch.argmax(y_predicted, dim=1)
-            total +=1 
+            total += y.size(0)
             correct += (predicted == y).sum().item()
-        accuracy = correct/ total 
-    return test_loss, accuracy
+        accuracy = (correct/ total) *100 
+    return total_loss, accuracy

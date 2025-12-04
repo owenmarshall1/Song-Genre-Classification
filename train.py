@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 def train(model, loader, device, epochs=30):
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
     model.to(device)
 
