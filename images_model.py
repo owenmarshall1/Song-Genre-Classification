@@ -19,8 +19,9 @@ class ImageConv2d(nn.Module):
             padding = 'same'
             ),
             
-            nn.MaxPool2d(2),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(),
+            nn.MaxPool2d(2)
         )
         self.conv2 = nn.Sequential(
             nn.Conv2d(
@@ -30,8 +31,9 @@ class ImageConv2d(nn.Module):
             stride=1, 
             padding = 'same' 
             ),
-            nn.MaxPool2d(4),
+            nn.BatchNorm2d(out_channels*2),
             nn.ReLU(),
+            nn.MaxPool2d(2),
             nn.Dropout(0.3)
         )
         

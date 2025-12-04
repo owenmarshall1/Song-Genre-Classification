@@ -30,7 +30,6 @@ class ImageGenreDataset:
                 img.height - self.crop_borders[0] - self.crop_borders[1],  # height
                 img.width - self.crop_borders[2] - self.crop_borders[3]   # width
             )),
-            #transforms.Grayscale(num_output_channels=1),
             transforms.Resize(self.img_size),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
