@@ -9,6 +9,8 @@ from audio_model import AudioCNN
 
 from images_dataset import ImageGenreDataset
 from images_model import ImageConv2d
+from test import test_model
+from tqdm import tqdm
 
 def train(model, loader, device, epochs=100):
     criterion = nn.CrossEntropyLoss()
@@ -19,7 +21,7 @@ def train(model, loader, device, epochs=100):
     for epoch in range(epochs):
         model.train()
         total, correct = 0, 0
-        for x, y in loader:
+        for x, y in tqdm(loader, desc=f"Epoch {epoch+1}" ):
             x, y = x.to(device), y.to(device)
 
             optimizer.zero_grad()
@@ -31,9 +33,10 @@ def train(model, loader, device, epochs=100):
             predicted = preds.argmax(dim=1)
             total += y.size(0)
             correct += (predicted == y).sum().item()
-
-        print(f"Epoch {epoch+1} | Accuracy: {100*correct/total:.2f}%")
-
+        accuracy = correct/total
+        print(f"Epoch {epoch+1} | Accuracy: {accuracy*100:.2f}%")
+        if accuracy> 0.97:
+            break
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["audio", "spec"], required=True)
@@ -52,9 +55,14 @@ def main():
         model = AudioCNN()
     else:
         data_handler = ImageGenreDataset("data/images_original")
-        loader = data_handler.train_loader
+        train_loader = data_handler.train_loader
+        test_loader = data_handler.test_loader
         model = ImageConv2d(num_classes=data_handler.num_classes)
-    train(model, loader, device)
+        
+
+    train(model, train_loader, device)
+    test_acc = test_model(model, test_loader, device)
+    print(f" Test Accuracy on Unseen Data: {test_acc:.2f}%")
 
 if __name__ == "__main__":
     main()
