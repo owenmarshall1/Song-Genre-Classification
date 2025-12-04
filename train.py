@@ -10,7 +10,7 @@ from audio_model import AudioCNN
 from images_dataset import ImageGenreDataset
 from images_model import ImageConv2d
 
-def train(model, loader, device, epochs=20):
+def train(model, loader, device, epochs=100):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
