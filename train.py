@@ -12,7 +12,7 @@ from images_model import ImageConv2d
 from test import test_model
 from tqdm import tqdm
 
-def train(model, loader, device, epochs=100):
+def train(model, loader, device, epochs=30):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
@@ -62,7 +62,7 @@ def main():
 
     train(model, train_loader, device)
     test_acc = test_model(model, test_loader, device)
-    print(f" Test Accuracy on Unseen Data: {test_acc:.2f}%")
-
+    test_loss, test_acc = test_model(model, test_loader, device)
+    print(f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_acc:.2f}%")
 if __name__ == "__main__":
     main()
