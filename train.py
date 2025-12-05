@@ -3,18 +3,20 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from audio_dataset import AudioGenreDataset, LABELS
 from audio_model import AudioCNN
 
 from images_dataset import ImageGenreDataset
 from images_model import ImageConv2d
+from images_model import Conv2dLayers
 from test import test_model
 from tqdm import tqdm
 
-def train(model, loader, device, epochs=30):
+def train(model, loader, device, epochs=100):
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
     model.to(device)
 
@@ -35,7 +37,7 @@ def train(model, loader, device, epochs=30):
             correct += (predicted == y).sum().item()
         accuracy = correct/total
         print(f"Epoch {epoch+1} | Accuracy: {accuracy*100:.2f}%")
-        if accuracy> 0.97:
+        if accuracy> 0.90:
             break
 def main():
     parser = argparse.ArgumentParser()
@@ -57,9 +59,9 @@ def main():
         data_handler = ImageGenreDataset("data/images_original")
         train_loader = data_handler.train_loader
         test_loader = data_handler.test_loader
-        model = ImageConv2d(num_classes=data_handler.num_classes)
+        model = Conv2dLayers(num_classes=data_handler.num_classes)
         
-
+    
     train(model, train_loader, device)
     test_acc = test_model(model, test_loader, device)
     test_loss, test_acc = test_model(model, test_loader, device)
