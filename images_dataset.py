@@ -20,9 +20,9 @@ class ImageGenreDataset:
         self.batch_size = batch_size
         self.split_ratio = split_ratio
         self.crop_borders =(35,35,54,42)
-        
-        # Define transforms
-        self.transform = transforms.Compose([
+
+        train_size = self.img_size[0] if isinstance(self.img_size, tuple) else self.img_size
+        self.train_transform = transforms.Compose([
             transforms.Lambda(lambda img: F.crop(
                 img,
                 self.crop_borders[0],  # top
@@ -30,25 +30,52 @@ class ImageGenreDataset:
                 img.height - self.crop_borders[0] - self.crop_borders[1],  # height
                 img.width - self.crop_borders[2] - self.crop_borders[3]   # width
             )),
-            transforms.Resize(self.img_size),
+            transforms.RandomResizedCrop(train_size, scale=(0.8, 1.0)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ColorJitter(brightness=0.15, contrast=0.15, saturation=0.15, hue=0.05),
             transforms.ToTensor(),
-            transforms.RandomResizedCrop(size=128, scale=(0.85, 1.0)),
-            transforms.RandomAffine(degrees=0, translate=(0.1, 0)),
-            transforms.ColorJitter(brightness=0.1, contrast=0.1),
-            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
 
-        # Load dataset with transform
-        self.data = datasets.ImageFolder(self.data_path, transform=self.transform)
-        self.classes = self.data.classes
-        self.num_classes = len(self.classes)
-        
-        # Split dataset
-        self.train_data, self.test_data = random_split(self.data,(split_ratio, 1-split_ratio))
+        self.test_transform = transforms.Compose([
+            transforms.Lambda(lambda img: F.crop(
+                img,
+                self.crop_borders[0],
+                self.crop_borders[2],
+                img.height - self.crop_borders[0] - self.crop_borders[1],
+                img.width - self.crop_borders[2] - self.crop_borders[3]
+            )),
+            transforms.Resize((train_size, train_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
 
-        # Create loaders
-        self.train_loader = DataLoader(self.train_data, batch_size=self.batch_size, shuffle=True)
-        self.test_loader  = DataLoader(self.test_data,  batch_size=self.batch_size, shuffle=False)
+        base_data = datasets.ImageFolder(self.data_path, transform=None)
+        self.classes = base_data.classes
+        self.num_classes = len(self.classes)
+
+        total = len(base_data)
+        train_len = int(self.split_ratio * total)
+        test_len = total - train_len
+        train_subset, test_subset = random_split(base_data, [train_len, test_len])
+
+        class TransformedSubset(torch.utils.data.Dataset):
+            def __init__(self, subset, transform):
+                self.subset = subset
+                self.transform = transform
+            def __len__(self):
+                return len(self.subset)
+            def __getitem__(self, idx):
+                x, y = self.subset[idx]
+                if self.transform is not None:
+                    x = self.transform(x)
+                return x, y
+
+        self.train_data = TransformedSubset(train_subset, self.train_transform)
+        self.test_data = TransformedSubset(test_subset, self.test_transform)
+
+        self.train_loader = DataLoader(self.train_data, batch_size=self.batch_size, shuffle=True, num_workers=0)
+        self.test_loader  = DataLoader(self.test_data,  batch_size=self.batch_size, shuffle=False, num_workers=0)
 
 
     def get_loaders(self):

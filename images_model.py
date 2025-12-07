@@ -1,67 +1,69 @@
 import torch
-import pandas as pd 
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader, random_split
+import math
 
-#CONV Neural data 
-class ImageConv2d(nn.Module):
-    def __init__(self, num_classes, input_channels=3 ,out_channels=64, kernel_size=2, pool_size=3, activation=None, img_size=(128, 128)):
+class ImageViT(nn.Module):
+    def __init__(
+            self,
+            num_classes,
+            img_size=128,
+            patch_size=16,
+            emb_dim=256,
+            depth=6,
+            num_heads=8,
+            mlp_dim=512,
+            dropout=0.1
+    ):
         super().__init__()
-        
 
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(
-            in_channels= input_channels, 
-            out_channels= out_channels, 
-            kernel_size=kernel_size, 
-            stride= 1, 
-            padding = 'same'
-            ),
-            
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(),
-            nn.MaxPool2d(2)
-        )
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(
-            in_channels= out_channels , 
-            out_channels= out_channels*2, 
-            kernel_size=kernel_size, 
-            stride=1, 
-            padding = 'same' 
-            ),
-            nn.BatchNorm2d(out_channels*2),
-            nn.ReLU(),
-            nn.MaxPool2d(2),
-            nn.Dropout(0.3)
-        )
-        
-        final_size = self._get_conv_output(img_size, input_channels)
-        self.fc = nn.Sequential(
-            nn.Linear(final_size, 256),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(256, num_classes)
-)
-    
-    def _get_conv_output(self, img_size, input_channels):
+        assert img_size % patch_size == 0, "Image size must be divisible by patch size"
+        num_patches = (img_size // patch_size) ** 2
+        patch_dim = 3 * patch_size * patch_size
 
-            dummy_input = torch.rand(1, input_channels, img_size[0], img_size[1])
-            output = self.conv1(dummy_input)
-            output = self.conv2(output)
-            n_size = output.view(output.size(0), -1).size(1)
-            
-            print(f"Calculated Final Size (H*W*C): {n_size}")
-            return n_size
+        self.patch_embed = nn.Linear(patch_dim, emb_dim)
+
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, emb_dim))
+
+        self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, emb_dim))
+
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=emb_dim,
+            nhead=num_heads,
+            dim_feedforward=mlp_dim,
+            dropout=dropout,
+            activation='gelu',
+            batch_first=True
+        )
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=depth)
+
+        self.mlp_head = nn.Sequential(
+            nn.LayerNorm(emb_dim),
+            nn.Linear(emb_dim, num_classes)
+        )
+
+        self.patch_size = patch_size
+
+        nn.init.trunc_normal_(self.pos_embed, std=0.02)
+        nn.init.trunc_normal_(self.cls_token, std=0.02)
+
+    def _patchify(self, x):
+        B, C, H, W = x.shape
+        p = self.patch_size
+        x = x.unfold(2, p, p).unfold(3, p, p)
+        x = x.contiguous().view(B, C, -1, p * p)
+        x = x.permute(0, 2, 1, 3)
+        x = x.flatten(2)
+        return x
     
-    def forward(self , X): 
-        X= self.conv1(X)
-        X= self.conv2(X)
-        X= torch.flatten(X,1)
-        X = self.fc(X)
-        return X
-    
-class Conv2dLayers(nn.Module):
-     def __init__(self,input_size, output_size):
-          super().__init__()
+    def forward(self, x):
+        B = x.size(0)
+        patches = self._patchify(x)
+        tokens = self.patch_embed(patches)
+
+        cls_tokens = self.cls_token.expand(B, -1, -1)
+        tokens = torch.cat((cls_tokens, tokens), dim=1)
+        tokens = tokens + self.pos_embed
+        encoded = self.transformer(tokens)
+        cls_out = encoded[:, 0]
+
+        return self.mlp_head(cls_out)
