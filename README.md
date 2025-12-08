@@ -1,6 +1,11 @@
 # **Song Genre Classification**  
 *(CSCI 4050U — Final Machine Learning Project)*
 
+# Group Members
+Owen Marshall - 100916209
+
+Seyed Arshia Hashemianzadeh - 100870762
+
 ## **1. Project Overview**
 This project explores the problem of **song genre classification** by converting raw audio into **Mel-spectrogram images** and applying **Vision Transformer (ViT)-based architectures** for supervised multi-class classification.
 

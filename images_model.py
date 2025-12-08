@@ -7,13 +7,23 @@ import numpy as np
 import timm
 
 class ImageViT(nn.Module):
-    def __init__( self, num_classes, img_size=224, patch_size=16, emb_dim=256, depth=6, num_heads=8, mlp_dim=512, ): 
+    def __init__( self, num_classes, img_size=224, patch_size=16, emb_dim=256, depth=6, num_heads=8, mlp_dim=512, dropout=0.1 ): 
         super().__init__()
 
         num_patches = (img_size // patch_size) ** 2
         patch_dim = 3 * patch_size * patch_size
 
         self.patch_embed = nn.Linear(patch_dim, emb_dim)
+
+        # Patch-level normalization and a small patch MLP (residual) to improve stability
+        self.patch_norm = nn.LayerNorm(emb_dim)
+        self.patch_mlp = nn.Sequential(
+            nn.Linear(emb_dim, emb_dim * 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(emb_dim * 2, emb_dim),
+            nn.Dropout(dropout)
+        )
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, emb_dim))
 
@@ -23,14 +33,17 @@ class ImageViT(nn.Module):
             d_model=emb_dim,
             nhead=num_heads,
             dim_feedforward=mlp_dim,
-            dropout=0.3,
+            dropout=dropout,
             activation='gelu',
             batch_first=True
         )
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=depth)
 
+        # Add dropout in the head to reduce overfitting
+        self.pos_drop = nn.Dropout(dropout)
         self.mlp_head = nn.Sequential(
             nn.LayerNorm(emb_dim),
+            nn.Dropout(dropout),
             nn.Linear(emb_dim, num_classes)
         )
 
@@ -53,9 +66,15 @@ class ImageViT(nn.Module):
         patches = self._patchify(x)
         tokens = self.patch_embed(patches)
 
+        # Patch-level normalization + small MLP residual helps regularization
+        tokens = self.patch_norm(tokens)
+        tokens = tokens + self.patch_mlp(tokens)
+
         cls_tokens = self.cls_token.expand(B, -1, -1)
         tokens = torch.cat((cls_tokens, tokens), dim=1)
         tokens = tokens + self.pos_embed
+        tokens = self.pos_drop(tokens)
+
         encoded = self.transformer(tokens)
         cls_out = encoded[:, 0]
 
