@@ -1,22 +1,15 @@
 import torch
 import torch.nn as nn
 import math
+import torchvision.models as models
+import torch
+import numpy as np 
+import timm
 
 class ImageViT(nn.Module):
-    def __init__(
-            self,
-            num_classes,
-            img_size=128,
-            patch_size=16,
-            emb_dim=256,
-            depth=6,
-            num_heads=8,
-            mlp_dim=512,
-            dropout=0.1
-    ):
+    def __init__( self, num_classes, img_size=128, patch_size=16, emb_dim=256, depth=6, num_heads=8, mlp_dim=512, ): 
         super().__init__()
 
-        assert img_size % patch_size == 0, "Image size must be divisible by patch size"
         num_patches = (img_size // patch_size) ** 2
         patch_dim = 3 * patch_size * patch_size
 
@@ -30,7 +23,7 @@ class ImageViT(nn.Module):
             d_model=emb_dim,
             nhead=num_heads,
             dim_feedforward=mlp_dim,
-            dropout=dropout,
+            dropout=0.3,
             activation='gelu',
             batch_first=True
         )
@@ -67,3 +60,23 @@ class ImageViT(nn.Module):
         cls_out = encoded[:, 0]
 
         return self.mlp_head(cls_out)
+
+class Deit(nn.Module):
+    def __init__(self,num_classes,):
+
+        super().__init__()
+
+        self.vit = timm.create_model("deit_tiny_patch16_224",pretrained= True, num_classes= 0)
+
+        feature = self.vit.num_features
+        self.head = nn.Sequential(
+            nn.Linear(feature, feature//2),
+            nn.ReLU(), 
+            nn.Dropout(0.3),
+            nn.Linear(feature//2, num_classes)
+         )
+        
+    def forward(self , X):
+        X = self.vit(X)
+        X = self.head(X)
+        return X

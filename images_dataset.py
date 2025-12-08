@@ -1,20 +1,16 @@
 from torchsummaryX import summary
-import numpy as np
 from torchvision import datasets 
 from torchvision import transforms
 from torchinfo import summary 
-from PIL import Image
 import torch
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 import torchvision.transforms.functional as F
-from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt 
 
 
 class ImageGenreDataset:
-    def __init__(self, data_path, img_size=(128, 128), batch_size=32, split_ratio=0.9):
+    def __init__(self, data_path, img_size=(224, 224), batch_size=32, split_ratio=0.9):
         self.data_path = data_path
         self.img_size = img_size
         self.batch_size = batch_size
@@ -34,7 +30,7 @@ class ImageGenreDataset:
             transforms.RandomHorizontalFlip(),
             transforms.ColorJitter(brightness=0.15, contrast=0.15, saturation=0.15, hue=0.05),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.3, 0.3, 0.3])
         ])
 
         self.test_transform = transforms.Compose([
@@ -51,6 +47,7 @@ class ImageGenreDataset:
         ])
 
         base_data = datasets.ImageFolder(self.data_path, transform=None)
+        
         self.classes = base_data.classes
         self.num_classes = len(self.classes)
 
@@ -83,3 +80,5 @@ class ImageGenreDataset:
 
     def get_classes(self):
         return self.classes
+    
+
