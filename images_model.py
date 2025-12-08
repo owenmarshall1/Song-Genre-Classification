@@ -38,7 +38,6 @@ class ImageViT(nn.Module):
         )
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=depth)
 
-        # Add dropout in the head to reduce overfitting
         self.pos_drop = nn.Dropout(dropout)
         self.mlp_head = nn.Sequential(
             nn.LayerNorm(emb_dim),
@@ -65,7 +64,6 @@ class ImageViT(nn.Module):
         patches = self._patchify(x)
         tokens = self.patch_embed(patches)
 
-        # Patch-level normalization + small MLP residual helps regularization
         tokens = self.patch_norm(tokens)
         tokens = tokens + self.patch_mlp(tokens)
 
