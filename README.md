@@ -7,9 +7,9 @@ Owen Marshall - 100916209
 Seyed Arshia Hashemianzadeh - 100870762
 
 ## **1. Project Overview**
-This project explores the problem of **song genre classification** by converting raw audio into **Mel-spectrogram images** and applying **Vision Transformer (ViT)-based architectures** for supervised multi-class classification.
+This project explores the problem of **song genre classification** by converting raw audio into **Mel-spectrogram images** and applying **Vision Transformer (ViT)-based architectures** for supervised multi-class classification. the main challenge was training a classifier with limited data and high accuracy.
 
-Our primary objective is to compare a **custom-built Vision Transformer (ViT)** against a **pretrained DeiT (Data-efficient Image Transformer)** to evaluate performance differences between:
+Our primary objective is to use a strong and efficient **custom-built Vision Transformer (ViT)** while solving the problems of having small dataset by utilizing **pretrained DeiT (Data-efficient Image Transformer)** whose design and features help reduce overfitting.:
 
 - A transformer trained from scratch on our dataset  
 - A transformer benefiting from ImageNet pretraining  
@@ -111,7 +111,7 @@ python gui_predict.py
 ## **6. Conclusion**
 This project demonstrates a complete machine learning pipeline:
 
-- Clear definition of a supervised learning problem  
+- successfully designed, trained, and deployed an AI system
 - Data preprocessing and augmentation  
 - Two transformer-based neural network architectures  
 - Comparative evaluation of pretrained vs. non-pretrained models  
