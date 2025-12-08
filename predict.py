@@ -9,6 +9,7 @@ import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
 import io
+import os
 
 
 
@@ -33,7 +34,8 @@ def predict(model,image,class_names):
     return predicted_class
 
 def audio_to_image(audio_path):
-    y, sr = librosa.load(audio_path)
+    y, sr = librosa.load(audio_path, duration =30)
+    y = librosa.util.normalize(y)
 
     S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
     S_dB = librosa.power_to_db(S, ref=np.max)
@@ -51,7 +53,7 @@ def audio_to_image(audio_path):
 
     return img
 
-########
+########main##########
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 data = ImageGenreDataset("data/images_original")
@@ -62,11 +64,12 @@ model = Deit(num_classes , )
 model.load_state_dict(torch.load("trained_model.pth"))
 model.to(device)
 
-
-predictions = []
-for i in range(3):
-    img = audio_to_image("songs/Frank_Sinatra_–_Cheek_To_Cheek_T.mp3")
-    pred = predict(model, img, class_names)
-    predictions.append(pred)
-prediction = Counter(predictions).most_common(1)[0][0]
-print(prediction)
+for song in os.listdir("songs/"): 
+    path = os.path.join("songs/", song)
+    predictions = []
+    for i in range(20):
+        img = audio_to_image(path)
+        pred = predict(model, img, class_names)
+        predictions.append(pred)
+    prediction = Counter(predictions).most_common(1)[0][0]
+    print(f"{song} → {prediction}")

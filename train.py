@@ -86,12 +86,16 @@ def main():
         data = ImageGenreDataset("data/images_original")
         train_loader = data.train_loader
         test_loader = data.test_loader
-        model = ImageViT(num_classes=data_handler.num_classes)
+        model = ImageViT(num_classes= data.num_classes)
         train(model, train_loader, device, epochs=args.epochs, test_loader=test_loader)
         
         if test_loader is not None:
             test_loss, test_acc = test_model(model, test_loader, device)
             print(f"Final Test Loss: {test_loss:.4f} | Final Test Accuracy: {test_acc:.2f}%")
+
+        torch.save(model.state_dict(), "ViT_model.pth")
+        print("Saved model as trained_model.pth")
+
     
 
 if __name__ == "__main__":
