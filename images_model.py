@@ -7,7 +7,7 @@ import numpy as np
 import timm
 
 class ImageViT(nn.Module):
-    def __init__( self, num_classes, img_size=128, patch_size=16, emb_dim=256, depth=6, num_heads=8, mlp_dim=512, ): 
+    def __init__( self, num_classes, img_size=224, patch_size=16, emb_dim=256, depth=6, num_heads=8, mlp_dim=512, ): 
         super().__init__()
 
         num_patches = (img_size // patch_size) ** 2

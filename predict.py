@@ -64,12 +64,12 @@ model = Deit(num_classes , )
 model.load_state_dict(torch.load("trained_model.pth"))
 model.to(device)
 
-for song in os.listdir("songs/"): 
-    path = os.path.join("songs/", song)
-    predictions = []
-    for i in range(20):
-        img = audio_to_image(path)
-        pred = predict(model, img, class_names)
-        predictions.append(pred)
-    prediction = Counter(predictions).most_common(1)[0][0]
-    print(f"{song} → {prediction}")
+# for song in os.listdir("songs/"): 
+#     path = os.path.join("songs/", song)
+#     predictions = []
+#     for i in range(20):
+#         img = audio_to_image(path)
+#         pred = predict(model, img, class_names)
+#         predictions.append(pred)
+#     prediction = Counter(predictions).most_common(1)[0][0]
+#     print(f"{song} → {prediction}")

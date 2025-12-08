@@ -94,7 +94,7 @@ def main():
             print(f"Final Test Loss: {test_loss:.4f} | Final Test Accuracy: {test_acc:.2f}%")
 
         torch.save(model.state_dict(), "ViT_model.pth")
-        print("Saved model as trained_model.pth")
+        print("Saved model as ViT_model.pth")
 
     
 
