@@ -15,7 +15,6 @@ class ImageViT(nn.Module):
 
         self.patch_embed = nn.Linear(patch_dim, emb_dim)
 
-        # Patch-level normalization and a small patch MLP (residual) to improve stability
         self.patch_norm = nn.LayerNorm(emb_dim)
         self.patch_mlp = nn.Sequential(
             nn.Linear(emb_dim, emb_dim * 2),
