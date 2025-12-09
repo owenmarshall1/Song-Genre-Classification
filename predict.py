@@ -68,7 +68,7 @@ data = ImageGenreDataset("data/images_original")
 class_names = data.classes
 num_classes = len(class_names)
 
-model = Deit(num_classes , )
+model = Deit(num_classes)
 model.load_state_dict(torch.load("trained_model.pth"))
 model.to(device)
 

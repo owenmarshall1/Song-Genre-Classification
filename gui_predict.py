@@ -114,7 +114,7 @@ transforms_image = transforms.Compose([
 ############### GUI Setup ###############
 root = tk.Tk()
 root.title("Song Genre Classifier")
-root.geometry("450x500")
+root.geometry("500x600")
 root.configure(bg="#1e1e1e")
 
 lbl_title = tk.Label(root, text="Song Genre Classifier", font=("Arial", 20, "bold"), bg="#1e1e1e", fg="white")
