@@ -1,0 +1,10 @@
+torch
+torchvision
+torchaudio
+timm
+librosa
+matplotlib
+pillow
+numpy
+tqdm
+tk
