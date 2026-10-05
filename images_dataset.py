@@ -1,20 +1,11 @@
-from torchsummaryX import summary
-import numpy as np
-from torchvision import datasets 
-from torchvision import transforms
-from torchinfo import summary 
-from PIL import Image
 import torch
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 import torchvision.transforms.functional as F
-from PIL import Image
-import numpy as np
-import matplotlib.pyplot as plt 
 
 
 class ImageGenreDataset:
-    def __init__(self, data_path, img_size=(128, 128), batch_size=32, split_ratio=0.9):
+    def __init__(self, data_path, img_size=(128, 128), batch_size=32, split_ratio=0.9, seed=42):
         self.data_path = data_path
         self.img_size = img_size
         self.batch_size = batch_size
@@ -41,7 +32,10 @@ class ImageGenreDataset:
         self.num_classes = len(self.classes)
         
         # Split dataset
-        self.train_data, self.test_data = random_split(self.data,(split_ratio, 1-split_ratio))
+        self.train_data, self.test_data = random_split(
+            self.data, (split_ratio, 1-split_ratio),
+            generator=torch.Generator().manual_seed(seed)
+        )
 
         # Create loaders
         self.train_loader = DataLoader(self.train_data, batch_size=self.batch_size, shuffle=True)

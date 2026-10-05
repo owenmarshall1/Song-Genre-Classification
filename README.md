@@ -29,7 +29,7 @@ Two approaches are implemented:
 
 ## Dataset
 
-The code expects the GTZAN dataset in `data/`, laid out as it ships on Kaggle:
+The dataset is not stored in this repo. Download it from [Kaggle](https://www.kaggle.com/datasets/andradaolteanu/gtzan-dataset-music-genre-classification) and extract the contents of its `Data/` folder into `data/` at the project root:
 
 ```
 data/
@@ -48,7 +48,7 @@ Requires Python 3.10+.
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install torch torchvision torchaudio librosa pydub numpy pandas matplotlib tqdm torchinfo torchsummaryX
+pip install -r requirements.txt
 ```
 
 A CUDA GPU is used automatically when available; otherwise training runs on the CPU.
@@ -66,6 +66,8 @@ Train the raw-audio model:
 ```bash
 python train.py --mode audio
 ```
+
+Pass `--seed N` (default `42`) to change the random seed. The same seed always produces the same train/test split, so runs can be compared.
 
 Training uses Adam (lr `1e-4`) with cross-entropy loss for up to 100 epochs. It stops early once training accuracy exceeds 90%. Afterwards, test loss and accuracy are printed for the held-out split.
 

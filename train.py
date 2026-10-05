@@ -1,4 +1,6 @@
 import argparse
+import random
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -39,10 +41,18 @@ def train(model, loader, device, epochs=100):
         print(f"Epoch {epoch+1} | Accuracy: {accuracy*100:.2f}%")
         if accuracy> 0.90:
             break
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["audio", "spec"], required=True)
+    parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
+    set_seed(args.seed)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -56,7 +66,7 @@ def main():
         loader = DataLoader(dataset, batch_size=4, shuffle=True)
         model = AudioCNN()
     else:
-        data_handler = ImageGenreDataset("data/images_original")
+        data_handler = ImageGenreDataset("data/images_original", seed=args.seed)
         train_loader = data_handler.train_loader
         test_loader = data_handler.test_loader
         model = Conv2dLayers(num_classes=data_handler.num_classes)

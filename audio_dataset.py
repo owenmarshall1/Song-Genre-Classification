@@ -2,11 +2,9 @@ import os
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
-import torchaudio
 import librosa
 import numpy as np
 from pydub import AudioSegment
-import io
 
 LABELS = {
     "blues": 0,

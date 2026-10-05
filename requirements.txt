@@ -1,0 +1,6 @@
+torch
+torchvision
+librosa
+pydub
+numpy
+tqdm

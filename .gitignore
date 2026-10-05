@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Dataset (download from Kaggle, see README)
+data/
+
+# Model checkpoints
+*.pth
